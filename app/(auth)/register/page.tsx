@@ -75,7 +75,7 @@ export default function RegisterPage() {
       });
 
       if (result?.ok) {
-        // Success - redirect to dashboard
+        // Success - redirect to dashboard using Next.js router
         router.push("/dashboard");
         router.refresh();
       } else {

@@ -4,6 +4,7 @@ import type { NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
   // Handle auth protection
+  // auth() automatically reads from the request in middleware
   const session = await auth();
 
   // Protect dashboard routes

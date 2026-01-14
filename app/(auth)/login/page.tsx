@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -22,6 +22,7 @@ function LoginForm() {
   const t = useTranslations("auth.login");
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { update } = useSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -62,7 +63,12 @@ function LoginForm() {
         );
         setIsLoading(false);
       } else if (result?.ok) {
-        router.push("/dashboard");
+        // Update session to ensure it's available
+        await update();
+        // Get callbackUrl from search params if present (from middleware redirect)
+        const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+        // Use router.push as recommended by Next.js
+        router.push(callbackUrl);
         router.refresh();
       } else {
         setError(t("failed"));
@@ -80,9 +86,7 @@ function LoginForm() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>{t("title")}</CardTitle>
-          <CardDescription>
-            {t("description")}
-          </CardDescription>
+          <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -142,16 +146,18 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={
-      <div className="container flex items-center justify-center min-h-[calc(100vh-4rem)] px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Login</CardTitle>
-            <CardDescription>Loading...</CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="container flex items-center justify-center min-h-[calc(100vh-4rem)] px-4">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>Login</CardTitle>
+              <CardDescription>Loading...</CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+      }
+    >
       <LoginForm />
     </Suspense>
   );
