@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useSession } from "next-auth/react"
 import { useStore } from "@/lib/store"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,6 +17,7 @@ interface OrderFormProps {
 }
 
 export function OrderForm({ printer }: OrderFormProps) {
+  const { data: session } = useSession()
   const { addOrder } = useStore()
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [estimatedHours, setEstimatedHours] = useState("")
@@ -36,7 +38,7 @@ export function OrderForm({ printer }: OrderFormProps) {
 
     const newOrder = {
       id: Date.now().toString(),
-      customerId: "current-user",
+      customerId: session?.user?.id || "",
       printerId: printer.id,
       printerName: printer.name,
       status: "pending" as const,

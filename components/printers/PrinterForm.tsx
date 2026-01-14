@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useSession } from "next-auth/react"
 import { useStore } from "@/lib/store"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Printer } from "@/lib/mock-data"
 
 export function PrinterForm() {
+  const { data: session } = useSession()
   const { addPrinter } = useStore()
   const [formData, setFormData] = useState({
     name: "",
@@ -27,7 +29,7 @@ export function PrinterForm() {
     
     const newPrinter: Printer = {
       id: Date.now().toString(),
-      ownerId: "current-user",
+      ownerId: session?.user?.id || "",
       name: formData.name,
       description: formData.description,
       specifications: {

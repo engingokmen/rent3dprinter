@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useSession } from "next-auth/react"
 import { useStore } from "@/lib/store"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -12,11 +13,12 @@ import { FileText, Package, Clock, CheckCircle, XCircle } from "lucide-react"
 import Link from "next/link"
 
 export default function DashboardPage() {
+  const { data: session } = useSession()
   const { printers, orders, updateOrder } = useStore()
   const [activeTab, setActiveTab] = useState("my-printers")
 
-  // Mock current user ID
-  const currentUserId = "current-user"
+  // Get current user ID from session
+  const currentUserId = session?.user?.id || ""
   
   // Filter printers owned by current user
   const myPrinters = printers.filter((p) => p.ownerId === currentUserId)
