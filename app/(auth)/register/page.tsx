@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +19,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
 export default function RegisterPage() {
+  const t = useTranslations("auth.register");
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -32,12 +34,12 @@ export default function RegisterPage() {
 
     // Validation
     if (password.length < 6) {
-      setError("Password must be at least 6 characters long");
+      setError(t("passwordTooShort"));
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError(t("passwordsDontMatch"));
       return;
     }
 
@@ -62,39 +64,30 @@ export default function RegisterPage() {
       }
 
       // Auto-login after registration
-      // Use the normalized email from the server response, or normalize client-side
-      const normalizedEmail = data.email || email.toLowerCase().trim();
+      // Use the normalized email from the server response (it's already normalized)
+      const loginEmail = data.email || email.toLowerCase().trim();
 
-      // Small delay to ensure user is fully persisted
-      await new Promise((resolve) => setTimeout(resolve, 200));
-
-      console.log("Attempting auto-login with email:", normalizedEmail);
-
+      // Auto-login immediately - user is already in memory
       const result = await signIn("credentials", {
-        email: normalizedEmail,
+        email: loginEmail,
         password,
         redirect: false,
       });
 
-      console.log("Auto-login result:", result);
-
-      if (result?.error) {
-        console.error("Auto-login error:", result.error);
-        // Registration was successful, so just redirect to login page with a message
-        router.push(
-          `/login?registered=true&email=${encodeURIComponent(normalizedEmail)}`
-        );
-      } else if (result?.ok) {
+      if (result?.ok) {
+        // Success - redirect to dashboard
         router.push("/dashboard");
         router.refresh();
       } else {
-        // Fallback: redirect to login with success message
+        // Auto-login failed - this is unexpected
+        // Show error and redirect to login as fallback
+        console.error("Auto-login failed:", result?.error);
         router.push(
-          `/login?registered=true&email=${encodeURIComponent(normalizedEmail)}`
+          `/login?registered=true&email=${encodeURIComponent(loginEmail)}`
         );
       }
     } catch (err) {
-      setError("An error occurred. Please try again.");
+      setError(t("error"));
       setIsLoading(false);
     }
   };
@@ -103,10 +96,8 @@ export default function RegisterPage() {
     <div className="container flex items-center justify-center min-h-[calc(100vh-4rem)] px-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Create Account</CardTitle>
-          <CardDescription>
-            Sign up to start renting or listing 3D printers
-          </CardDescription>
+          <CardTitle>{t("title")}</CardTitle>
+          <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -117,7 +108,7 @@ export default function RegisterPage() {
               </Alert>
             )}
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">{t("name")}</Label>
               <Input
                 id="name"
                 type="text"
@@ -129,7 +120,7 @@ export default function RegisterPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("email")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -141,7 +132,7 @@ export default function RegisterPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("password")}</Label>
               <Input
                 id="password"
                 type="password"
@@ -153,11 +144,11 @@ export default function RegisterPage() {
                 minLength={6}
               />
               <p className="text-xs text-muted-foreground">
-                Must be at least 6 characters
+                {t("passwordMinLength")}
               </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword">{t("confirmPassword")}</Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -170,12 +161,12 @@ export default function RegisterPage() {
               />
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Creating account..." : "Create Account"}
+              {isLoading ? "Creating account..." : t("createAccount")}
             </Button>
             <p className="text-center text-sm text-muted-foreground">
-              Already have an account?{" "}
+              {t("alreadyHaveAccount")}{" "}
               <Link href="/login" className="text-primary hover:underline">
-                Login here
+                {t("loginHere")}
               </Link>
             </p>
           </form>

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createUser } from "@/lib/mock-users";
+import { createUser, findUserByEmail } from "@/lib/mock-users";
 import { z } from "zod";
 
 const registerSchema = z.object({
@@ -11,7 +11,7 @@ const registerSchema = z.object({
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    
+
     // Validate input
     const validation = registerSchema.safeParse(body);
     if (!validation.success) {
@@ -27,10 +27,9 @@ export async function POST(request: Request) {
     const normalizedEmail = email.toLowerCase().trim();
     const user = await createUser(normalizedEmail, name, password);
 
-    // Verify user was created (for debugging)
-    const { findUserByEmail } = await import("@/lib/mock-users");
+    // Verify user was created (ensure it's in the same module instance)
     const verifyUser = findUserByEmail(normalizedEmail);
-    
+
     if (!verifyUser) {
       console.error("User creation verification failed");
       return NextResponse.json(
@@ -40,10 +39,10 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(
-      { 
-        message: "User created successfully", 
+      {
+        message: "User created successfully",
         userId: user.id,
-        email: user.email // Return normalized email for client
+        email: user.email, // Return normalized email for client
       },
       { status: 201 }
     );
@@ -54,4 +53,3 @@ export async function POST(request: Request) {
     );
   }
 }
-

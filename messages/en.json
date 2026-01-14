@@ -1,0 +1,69 @@
+{
+  "auth": {
+    "login": {
+      "title": "Login",
+      "description": "Enter your email and password to access your account",
+      "email": "Email",
+      "password": "Password",
+      "signIn": "Sign In",
+      "signingIn": "Signing in...",
+      "noAccount": "Don't have an account?",
+      "registerHere": "Register here",
+      "invalidCredentials": "Invalid email or password",
+      "error": "An error occurred during sign in",
+      "failed": "Sign in failed. Please try again.",
+      "registrationSuccess": "Registration successful! Please log in with your credentials."
+    },
+    "register": {
+      "title": "Create Account",
+      "description": "Sign up to start renting or listing 3D printers",
+      "name": "Name",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "createAccount": "Create Account",
+      "alreadyHaveAccount": "Already have an account?",
+      "loginHere": "Login here",
+      "passwordMinLength": "Must be at least 6 characters",
+      "passwordTooShort": "Password must be at least 6 characters long",
+      "passwordsDontMatch": "Passwords do not match",
+      "error": "An error occurred. Please try again."
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "myPrinters": "My Printers",
+    "listPrinter": "List Printer",
+    "myOrders": "My Orders",
+    "printerOrders": "Printer Orders",
+    "noPrinters": "You haven't listed any printers yet.",
+    "listFirstPrinter": "List Your First Printer",
+    "noOrders": "You haven't placed any orders yet.",
+    "browsePrinters": "Browse Printers",
+    "noPrinterOrders": "No orders for your printers yet.",
+    "totalPrice": "Total Price",
+    "paymentStatus": "Payment Status",
+    "orderDate": "Order Date",
+    "proceedToPayment": "Proceed to Payment",
+    "file": "File",
+    "status": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "completed": "Completed"
+    },
+    "payment": {
+      "pending": "Pending",
+      "paid": "Paid",
+      "failed": "Failed"
+    }
+  },
+  "navbar": {
+    "home": "Home",
+    "browse": "Browse",
+    "dashboard": "Dashboard",
+    "login": "Login",
+    "logout": "Logout"
+  }
+}
+

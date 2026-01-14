@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +18,8 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle } from "lucide-react";
 
-export default function LoginPage() {
+function LoginForm() {
+  const t = useTranslations("auth.login");
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
@@ -29,15 +31,13 @@ export default function LoginPage() {
   useEffect(() => {
     // Check if user just registered
     if (searchParams.get("registered") === "true") {
-      setSuccess(
-        "Registration successful! Please log in with your credentials."
-      );
+      setSuccess(t("registrationSuccess"));
       const registeredEmail = searchParams.get("email");
       if (registeredEmail) {
         setEmail(registeredEmail);
       }
     }
-  }, [searchParams]);
+  }, [searchParams, t]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,20 +57,20 @@ export default function LoginPage() {
         console.error("Sign in error:", result.error);
         setError(
           result.error === "CredentialsSignin"
-            ? "Invalid email or password"
-            : "An error occurred during sign in"
+            ? t("invalidCredentials")
+            : t("error")
         );
         setIsLoading(false);
       } else if (result?.ok) {
         router.push("/dashboard");
         router.refresh();
       } else {
-        setError("Sign in failed. Please try again.");
+        setError(t("failed"));
         setIsLoading(false);
       }
     } catch (err) {
       console.error("Sign in exception:", err);
-      setError("An error occurred. Please try again.");
+      setError(t("error"));
       setIsLoading(false);
     }
   };
@@ -79,9 +79,9 @@ export default function LoginPage() {
     <div className="container flex items-center justify-center min-h-[calc(100vh-4rem)] px-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Login</CardTitle>
+          <CardTitle>{t("title")}</CardTitle>
           <CardDescription>
-            Enter your email and password to access your account
+            {t("description")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -101,7 +101,7 @@ export default function LoginPage() {
               </Alert>
             )}
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("email")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -113,7 +113,7 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("password")}</Label>
               <Input
                 id="password"
                 type="password"
@@ -125,17 +125,34 @@ export default function LoginPage() {
               />
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Signing in..." : "Sign In"}
+              {isLoading ? t("signingIn") : t("signIn")}
             </Button>
             <p className="text-center text-sm text-muted-foreground">
-              Don't have an account?{" "}
+              {t("noAccount")}{" "}
               <Link href="/register" className="text-primary hover:underline">
-                Register here
+                {t("registerHere")}
               </Link>
             </p>
           </form>
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="container flex items-center justify-center min-h-[calc(100vh-4rem)] px-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Login</CardTitle>
+            <CardDescription>Loading...</CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }

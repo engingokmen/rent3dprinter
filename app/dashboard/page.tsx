@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useSession } from "next-auth/react"
+import { useTranslations } from "next-intl"
 import { useStore } from "@/lib/store"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -13,6 +14,7 @@ import { FileText, Package, Clock, CheckCircle, XCircle } from "lucide-react"
 import Link from "next/link"
 
 export default function DashboardPage() {
+  const t = useTranslations("dashboard")
   const { data: session } = useSession()
   const { printers, orders, updateOrder } = useStore()
   const [activeTab, setActiveTab] = useState("my-printers")
@@ -43,13 +45,13 @@ export default function DashboardPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
-        return <Badge variant="outline"><Clock className="h-3 w-3 mr-1" />Pending</Badge>
+        return <Badge variant="outline"><Clock className="h-3 w-3 mr-1" />{t("status.pending")}</Badge>
       case "approved":
-        return <Badge className="bg-green-500"><CheckCircle className="h-3 w-3 mr-1" />Approved</Badge>
+        return <Badge className="bg-green-500"><CheckCircle className="h-3 w-3 mr-1" />{t("status.approved")}</Badge>
       case "rejected":
-        return <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" />Rejected</Badge>
+        return <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" />{t("status.rejected")}</Badge>
       case "completed":
-        return <Badge className="bg-blue-500"><CheckCircle className="h-3 w-3 mr-1" />Completed</Badge>
+        return <Badge className="bg-blue-500"><CheckCircle className="h-3 w-3 mr-1" />{t("status.completed")}</Badge>
       default:
         return <Badge>{status}</Badge>
     }
@@ -58,7 +60,7 @@ export default function DashboardPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
+        <h1 className="text-3xl font-bold mb-2">{t("title")}</h1>
         <p className="text-muted-foreground">
           Manage your printers and orders
         </p>
@@ -66,10 +68,10 @@ export default function DashboardPage() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList>
-          <TabsTrigger value="my-printers">My Printers</TabsTrigger>
-          <TabsTrigger value="list-printer">List New Printer</TabsTrigger>
-          <TabsTrigger value="my-orders">My Orders</TabsTrigger>
-          <TabsTrigger value="printer-orders">Orders for My Printers</TabsTrigger>
+          <TabsTrigger value="my-printers">{t("myPrinters")}</TabsTrigger>
+          <TabsTrigger value="list-printer">{t("listPrinter")}</TabsTrigger>
+          <TabsTrigger value="my-orders">{t("myOrders")}</TabsTrigger>
+          <TabsTrigger value="printer-orders">{t("printerOrders")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="my-printers" className="space-y-4">
@@ -77,9 +79,9 @@ export default function DashboardPage() {
             <Card>
               <CardContent className="py-12 text-center">
                 <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground mb-4">You haven't listed any printers yet.</p>
+                <p className="text-muted-foreground mb-4">{t("noPrinters")}</p>
                 <Button onClick={() => setActiveTab("list-printer")}>
-                  List Your First Printer
+                  {t("listFirstPrinter")}
                 </Button>
               </CardContent>
             </Card>
@@ -101,9 +103,9 @@ export default function DashboardPage() {
             <Card>
               <CardContent className="py-12 text-center">
                 <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground mb-4">You haven't placed any orders yet.</p>
+                <p className="text-muted-foreground mb-4">{t("noOrders")}</p>
                 <Button asChild>
-                  <Link href="/browse">Browse Printers</Link>
+                  <Link href="/browse">{t("browsePrinters")}</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -116,7 +118,7 @@ export default function DashboardPage() {
                       <div>
                         <CardTitle>{order.printerName}</CardTitle>
                         <CardDescription>
-                          File: {order.modelFileName}
+                          {t("file")}: {order.modelFileName}
                         </CardDescription>
                       </div>
                       {getStatusBadge(order.status)}
@@ -125,22 +127,22 @@ export default function DashboardPage() {
                   <CardContent>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <p className="text-muted-foreground">Total Price</p>
+                        <p className="text-muted-foreground">{t("totalPrice")}</p>
                         <p className="font-semibold">${order.totalPrice.toFixed(2)}</p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Payment Status</p>
-                        <p className="font-semibold capitalize">{order.paymentStatus}</p>
+                        <p className="text-muted-foreground">{t("paymentStatus")}</p>
+                        <p className="font-semibold capitalize">{t(`payment.${order.paymentStatus}`)}</p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Order Date</p>
+                        <p className="text-muted-foreground">{t("orderDate")}</p>
                         <p className="font-semibold">
                           {new Date(order.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                       {order.status === "approved" && order.paymentStatus === "pending" && (
                         <div className="col-span-2">
-                          <Button className="w-full">Proceed to Payment</Button>
+                          <Button className="w-full">{t("proceedToPayment")}</Button>
                         </div>
                       )}
                     </div>
@@ -157,7 +159,7 @@ export default function DashboardPage() {
               <CardContent className="py-12 text-center">
                 <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                 <p className="text-muted-foreground">
-                  No orders for your printers yet.
+                  {t("noPrinterOrders")}
                 </p>
               </CardContent>
             </Card>
@@ -170,7 +172,7 @@ export default function DashboardPage() {
                       <div>
                         <CardTitle>{order.printerName}</CardTitle>
                         <CardDescription>
-                          File: {order.modelFileName}
+                          {t("file")}: {order.modelFileName}
                         </CardDescription>
                       </div>
                       {getStatusBadge(order.status)}
@@ -179,11 +181,11 @@ export default function DashboardPage() {
                   <CardContent>
                     <div className="grid grid-cols-2 gap-4 text-sm mb-4">
                       <div>
-                        <p className="text-muted-foreground">Total Price</p>
+                        <p className="text-muted-foreground">{t("totalPrice")}</p>
                         <p className="font-semibold">${order.totalPrice.toFixed(2)}</p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Order Date</p>
+                        <p className="text-muted-foreground">{t("orderDate")}</p>
                         <p className="font-semibold">
                           {new Date(order.createdAt).toLocaleDateString()}
                         </p>

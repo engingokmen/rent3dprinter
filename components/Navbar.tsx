@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useSession, signOut } from "next-auth/react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -14,6 +15,7 @@ import {
 import { Printer, User, LogOut } from "lucide-react"
 
 export function Navbar() {
+  const t = useTranslations("navbar")
   const { data: session, status } = useSession()
 
   const handleSignOut = async () => {
@@ -30,14 +32,14 @@ export function Navbar() {
           </Link>
           <div className="flex items-center gap-4">
             <Button asChild variant="ghost">
-              <Link href="/browse">Browse</Link>
+              <Link href="/browse">{t("browse")}</Link>
             </Button>
             {status === "loading" ? (
               <div className="h-8 w-8 animate-pulse rounded-full bg-muted" />
             ) : session ? (
               <>
                 <Button asChild variant="ghost">
-                  <Link href="/dashboard">Dashboard</Link>
+                  <Link href="/dashboard">{t("dashboard")}</Link>
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -55,12 +57,12 @@ export function Navbar() {
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link href="/dashboard">Dashboard</Link>
+                      <Link href="/dashboard">{t("dashboard")}</Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut}>
                       <LogOut className="mr-2 h-4 w-4" />
-                      Sign Out
+                      {t("logout")}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -68,7 +70,7 @@ export function Navbar() {
             ) : (
               <>
                 <Button asChild variant="ghost">
-                  <Link href="/login">Login</Link>
+                  <Link href="/login">{t("login")}</Link>
                 </Button>
                 <Button asChild>
                   <Link href="/register">Sign Up</Link>
