@@ -1,7 +1,4 @@
-"use client"
-
-import { use } from "react"
-import { useStore } from "@/lib/store"
+import serverStore from "@/lib/server-store"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -9,14 +6,13 @@ import { MapPin, DollarSign, Package, Layers } from "lucide-react"
 import Link from "next/link"
 import { OrderForm } from "@/components/orders/OrderForm"
 
-export default function PrinterDetailPage({
+export default async function PrinterDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>
 }) {
-  const { id } = use(params)
-  const { printers } = useStore()
-  const printer = printers.find((p) => p.id === id)
+  const { id } = await params
+  const printer = serverStore.getPrinterById(id)
 
   if (!printer) {
     return (

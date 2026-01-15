@@ -2,17 +2,19 @@
 
 import { useState } from "react"
 import { useSession } from "next-auth/react"
-import { useStore } from "@/lib/store"
+import { useRouter } from "next/navigation"
+import { createPrinter } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Printer } from "@/lib/mock-data"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { AlertCircle, CheckCircle } from "lucide-react"
 
 export function PrinterForm() {
   const { data: session } = useSession()
-  const { addPrinter } = useStore()
+  const router = useRouter()
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -23,43 +25,53 @@ export function PrinterForm() {
     pricePerHour: "",
     location: "",
   })
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    const newPrinter: Printer = {
-      id: Date.now().toString(),
-      ownerId: session?.user?.id || "",
-      name: formData.name,
-      description: formData.description,
-      specifications: {
-        buildVolume: formData.buildVolume,
-        layerHeight: formData.layerHeight,
-        materials: formData.materials.split(",").map((m) => m.trim()),
-        technology: formData.technology,
-      },
-      pricePerHour: parseFloat(formData.pricePerHour),
-      location: formData.location,
-      images: [],
-      status: "available",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
+    setError("")
+    setSuccess("")
+    setIsLoading(true)
 
-    addPrinter(newPrinter)
-    alert("Printer listed successfully! (This is a demo - no data is saved)")
-    
-    // Reset form
-    setFormData({
-      name: "",
-      description: "",
-      buildVolume: "",
-      layerHeight: "",
-      technology: "FDM",
-      materials: "",
-      pricePerHour: "",
-      location: "",
-    })
+    try {
+      await createPrinter({
+        name: formData.name,
+        description: formData.description,
+        specifications: {
+          buildVolume: formData.buildVolume,
+          layerHeight: formData.layerHeight,
+          materials: formData.materials.split(",").map((m) => m.trim()),
+          technology: formData.technology,
+        },
+        pricePerHour: parseFloat(formData.pricePerHour),
+        location: formData.location,
+        images: [],
+        status: "available",
+      })
+
+      setSuccess("Printer listed successfully!")
+      
+      // Reset form
+      setFormData({
+        name: "",
+        description: "",
+        buildVolume: "",
+        layerHeight: "",
+        technology: "FDM",
+        materials: "",
+        pricePerHour: "",
+        location: "",
+      })
+
+      // Refresh the page to show the new printer
+      router.refresh()
+    } catch (err: any) {
+      setError(err.message || "Failed to list printer")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -72,6 +84,20 @@ export function PrinterForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          {success && (
+            <Alert className="border-green-500 bg-green-50 dark:bg-green-950">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800 dark:text-green-200">
+                {success}
+              </AlertDescription>
+            </Alert>
+          )}
           <div className="space-y-2">
             <Label htmlFor="name">Printer Name *</Label>
             <Input
@@ -169,8 +195,8 @@ export function PrinterForm() {
             </div>
           </div>
 
-          <Button type="submit" className="w-full">
-            List Printer
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? "Listing..." : "List Printer"}
           </Button>
         </form>
       </CardContent>

@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { useStore } from "@/lib/store";
+import { useRouter } from "next/navigation";
+import { fetchPrinters, fetchOrders, updateOrder } from "@/lib/api";
+import { Printer, Order } from "@/lib/mock-data";
 import {
   Card,
   CardContent,
@@ -22,11 +24,37 @@ import Link from "next/link";
 export default function DashboardContent() {
   const t = useTranslations("dashboard");
   const { data: session } = useSession();
-  const { printers, orders, updateOrder } = useStore();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("my-printers");
+  const [printers, setPrinters] = useState<Printer[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Get current user ID from session
   const currentUserId = session?.user?.id || "";
+
+  // Fetch data on mount and when session changes
+  useEffect(() => {
+    if (currentUserId) {
+      loadData();
+    }
+  }, [currentUserId]);
+
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+      const [printersData, ordersData] = await Promise.all([
+        fetchPrinters(),
+        fetchOrders(),
+      ]);
+      setPrinters(printersData);
+      setOrders(ordersData);
+    } catch (error) {
+      console.error("Failed to load data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Filter printers owned by current user
   const myPrinters = printers.filter((p) => p.ownerId === currentUserId);
@@ -40,12 +68,24 @@ export default function DashboardContent() {
     return printer?.ownerId === currentUserId;
   });
 
-  const handleApproveOrder = (orderId: string) => {
-    updateOrder(orderId, { status: "approved" });
+  const handleApproveOrder = async (orderId: string) => {
+    try {
+      await updateOrder(orderId, { status: "approved" });
+      await loadData(); // Refresh data
+      router.refresh();
+    } catch (error) {
+      console.error("Failed to approve order:", error);
+    }
   };
 
-  const handleRejectOrder = (orderId: string) => {
-    updateOrder(orderId, { status: "rejected" });
+  const handleRejectOrder = async (orderId: string) => {
+    try {
+      await updateOrder(orderId, { status: "rejected" });
+      await loadData(); // Refresh data
+      router.refresh();
+    } catch (error) {
+      console.error("Failed to reject order:", error);
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -82,6 +122,16 @@ export default function DashboardContent() {
         return <Badge>{status}</Badge>;
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
